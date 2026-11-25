@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DeepSeek 控制台</string>
+    <string name="tab_usage">用量</string>
+    <string name="tab_keys">Keys</string>
+    <string name="tab_topup">充值</string>
+    <string name="tab_billing">账单</string>
+    <string name="tab_account">账号</string>
+</resources>

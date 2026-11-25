@@ -1,0 +1,16 @@
+# Local SDK path (machine-specific)
+local.properties
+
+# Gradle / build caches
+.gradle/
+build/
+app/build/intermediates/
+app/build/tmp/
+app/build/generated/
+app/build/kotlin/
+app/build/classes/
+*.iml
+.idea/
+
+# Keep the release/debug APK for download:
+# app/build/outputs/apk/debug/app-debug.apk is intentionally NOT ignored
