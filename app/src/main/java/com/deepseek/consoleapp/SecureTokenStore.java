@@ -58,7 +58,9 @@ public final class SecureTokenStore {
 
     public static void clear(Context context) {
         if (context == null) return;
-        prefs(context).edit().remove(KEY).apply();
+        // commit() (not apply()) so a subsequent Activity start sees the cleared
+        // token immediately; otherwise LoginActivity can re-read the old token.
+        prefs(context).edit().remove(KEY).commit();
     }
 
     private static SharedPreferences prefs(Context context) {

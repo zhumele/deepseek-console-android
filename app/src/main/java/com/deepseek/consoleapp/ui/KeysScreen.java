@@ -127,9 +127,16 @@ public class KeysScreen extends BaseScreen {
                         return;
                     }
                     JSONObject body = new JSONObject();
-                    try { body.put("name", name); } catch (Exception ignored) { }
+                    try {
+                        body.put("action", "create");
+                        body.put("name", name);
+                        body.put("redacted_key", JSONObject.NULL);
+                        body.put("created_at", JSONObject.NULL);
+                        body.put("tracking_id", JSONObject.NULL);
+                        body.put("is_exp", false);
+                    } catch (Exception ignored) { }
                     loading("正在创建…");
-                    ApiClient.post("/api/v0/users/create_api_key", activity.token(), body, new ApiClient.Callback() {
+                    ApiClient.post("/api/v0/users/edit_api_keys", activity.token(), body, new ApiClient.Callback() {
                         @Override public void onSuccess(JSONObject data) {
                             activity.runOnUiThread(() -> showCreated(ApiClient.biz(data)));
                         }
@@ -144,9 +151,14 @@ public class KeysScreen extends BaseScreen {
     private void showCreated(JSONObject biz) {
         String key = "";
         if (biz != null) {
-            key = biz.optString("key", biz.optString("api_key", ""));
-            if (key.isEmpty() && biz.opt("data") instanceof JSONObject) {
-                key = biz.optJSONObject("data").optString("key", "");
+            // Official response: biz_data.api_key = {name, sensitive_id (plaintext), tracking_id, ...}
+            JSONObject apiKey = biz.optJSONObject("api_key");
+            if (apiKey != null) {
+                key = apiKey.optString("sensitive_id", apiKey.optString("key", ""));
+            }
+            if (key.isEmpty()) key = biz.optString("key", "");
+            if (key.isEmpty() && biz.opt("api_key") instanceof String) {
+                key = biz.optString("api_key");
             }
         }
         String finalKey = key;
@@ -167,15 +179,24 @@ public class KeysScreen extends BaseScreen {
 
     private void confirmDelete(JSONObject key) {
         String trackingId = key.optString("tracking_id", "");
+        String redactedKey = key.optString("sensitive_id", "");
+        Object createdRaw = key.opt("created_at");
         new AlertDialog.Builder(getContext())
                 .setTitle("删除 API key")
                 .setMessage("确定删除「" + key.optString("name", "未命名") + "」？此操作不可撤销。")
                 .setNegativeButton("取消", null)
                 .setPositiveButton("删除", (d, w) -> {
                     JSONObject body = new JSONObject();
-                    try { body.put("tracking_id", trackingId); } catch (Exception ignored) { }
+                    try {
+                        body.put("action", "delete");
+                        body.put("name", JSONObject.NULL);
+                        body.put("redacted_key", redactedKey);
+                        body.put("created_at", createdRaw);
+                        body.put("tracking_id", trackingId);
+                        body.put("is_exp", false);
+                    } catch (Exception ignored) { }
                     loading("正在删除…");
-                    ApiClient.post("/api/v0/users/delete_api_key", activity.token(), body, new ApiClient.Callback() {
+                    ApiClient.post("/api/v0/users/edit_api_keys", activity.token(), body, new ApiClient.Callback() {
                         @Override public void onSuccess(JSONObject data) {
                             activity.runOnUiThread(KeysScreen.this::reload);
                         }
